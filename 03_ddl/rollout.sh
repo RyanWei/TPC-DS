@@ -50,11 +50,11 @@ if [ "${DROP_EXISTING_TABLES}" == "true" ]; then
 
     counter=0
 
-    if [ "${VERSION}" == "gpdb_6" ] || [ "${VERSION}" == "gpdb_7" ] || [ "${VERSION}" == "gpdb_8" ]; then
-      SQL_QUERY="select rank() over(partition by g.hostname order by g.datadir), g.hostname from gp_segment_configuration g where g.content >= 0 and g.role = '${GPFDIST_LOCATION}' order by g.hostname"
-    else
+    if [ "${VERSION}" == "gpdb_5" ]; then
       SQL_QUERY="select rank() over (partition by g.hostname order by p.fselocation), g.hostname from gp_segment_configuration g join pg_filespace_entry p on g.dbid = p.fsedbid join pg_tablespace t on t.spcfsoid = p.fsefsoid where g.content >= 0 and g.role = '${GPFDIST_LOCATION}' and t.spcname = 'pg_default' order by g.hostname"
-    fi
+    else
+      SQL_QUERY="select rank() over(partition by g.hostname order by g.datadir), g.hostname from gp_segment_configuration g where g.content >= 0 and g.role = '${GPFDIST_LOCATION}' order by g.hostname"
+   fi
     for x in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "${SQL_QUERY}"); do
       CHILD=$(echo ${x} | awk -F '|' '{print $1}')
       EXT_HOST=$(echo ${x} | awk -F '|' '{print $2}')
@@ -78,15 +78,22 @@ if [ "${DROP_EXISTING_TABLES}" == "true" ]; then
   done
 fi
 
+DropRoleDenp="drop owned by ${BENCH_ROLE} cascade"
 DropRole="DROP ROLE IF EXISTS ${BENCH_ROLE}"
 CreateRole="CREATE ROLE ${BENCH_ROLE}"
 GrantSchemaPrivileges="GRANT ALL PRIVILEGES ON SCHEMA tpcds TO ${BENCH_ROLE}"
 GrantTablePrivileges="GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA tpcds TO ${BENCH_ROLE}"
-# SetSearchPath="ALTER database gpadmin SET search_path=tpcds, \"\${user}\", public"
+echo "rm -f ${PWD}/GrantTablePrivileges.sql"
+rm -f ${PWD}/GrantTablePrivileges.sql
+psql -tc "select \$\$GRANT ALL PRIVILEGES on table ${SCHEMA_NAME}.\$\$||tablename||\$\$ TO ${BENCH_ROLE};\$\$ from pg_tables where schemaname='${SCHEMA_NAME}'" > ${PWD}/GrantTablePrivileges.sql
 
 start_log
 
 if [ "${BENCH_ROLE}" != "gpadmin" ]; then
+  set +e
+  log_time "Drop role dependencies for ${BENCH_ROLE}"
+  psql -v ON_ERROR_STOP=0 -q -P pager=off -c "${DropRoleDenp}"
+  set -e
   log_time "Drop role ${BENCH_ROLE}"
   psql -v ON_ERROR_STOP=0 -q -P pager=off -c "${DropRole}"
   log_time "Creating role ${BENCH_ROLE}"
@@ -94,7 +101,7 @@ if [ "${BENCH_ROLE}" != "gpadmin" ]; then
   log_time "Grant schema privileges to role ${BENCH_ROLE}"
   psql -v ON_ERROR_STOP=0 -q -P pager=off -c "${GrantSchemaPrivileges}"
   log_time "Grant table privileges to role ${BENCH_ROLE}"
-  psql -v ON_ERROR_STOP=0 -q -P pager=off -c "${GrantTablePrivileges}"
+  psql -v ON_ERROR_STOP=0 -q -P pager=off -f ${PWD}/GrantTablePrivileges.sql
 fi
 
 log_time "Set search_path for database gpadmin"
