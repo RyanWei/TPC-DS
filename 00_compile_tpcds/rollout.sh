@@ -6,16 +6,18 @@ PWD=$(get_pwd ${BASH_SOURCE[0]})
 step="compile_tpcds"
 init_log ${step}
 start_log
-schema_name="tpcds"
+schema_name="${SCHEMA_NAME}"
 export schema_name
 table_name="compile"
 export table_name
+
+compile_flag="true"
 
 function make_tpc() {
   #compile the tools
   cd ${PWD}/tools
   rm -f ./*.o
-  ADDITIONAL_CFLAGS_OPTION="-g -Wno-unused-function -Wno-unused-but-set-variable -Wno-format" make
+  ADDITIONAL_CFLAGS_OPTION="-g -Wno-unused-function -Wno-unused-but-set-variable -Wno-format -fcommon" make
   cd ..
 }
 
@@ -40,7 +42,33 @@ function copy_queries() {
   cp -R query_templates ${TPC_DS_DIR}/*_multi_user/
 }
 
-make_tpc
+function check_binary() {
+  set +e
+  
+  cd ${PWD}/tools/
+  cp -f dsqgen.${CHIP_TYPE} dsqgen
+  cp -f dsdgen.${CHIP_TYPE} dsdgen
+  chmod +x dsqgen
+  chmod +x dsdgen
+
+  ./dsqgen -help
+  if [ $? == 0 ]; then 
+    ./dsdgen -help
+    if [ $? == 0 ]; then
+      compile_flag="false" 
+    fi
+  fi
+  cd ..
+  set -e
+}
+
+check_binary
+
+if [ "${compile_flag}" == "true" ]; then
+  make_tpc
+else
+  echo "Binary works, no compiling needed."
+fi
 create_hosts_file
 copy_tpc
 copy_queries
