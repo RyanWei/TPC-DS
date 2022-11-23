@@ -238,6 +238,9 @@ Table storage is defined in `functions.sh` and is configured for optimal perform
 - `MEDIUM_STORAGE`: `catalog_returns` and `store_returns`
 - `LARGE_STORAGE`: `catalog_sales`, `inventory`, `store_sales`, and `web_sales`
 
+Table distribution keys are defined in `../03_ddl/distribution.txt`, you can modify tables' distribution keys by changing this file. You can set the distribution method to hash with colunm names or "REPLICATED".
+
+
 ### Execution
 
 Running the benchmark as a background process:
