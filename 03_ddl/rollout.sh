@@ -29,7 +29,12 @@ if [ "${DROP_EXISTING_TABLES}" == "true" ]; then
           distribution=$(echo ${z} | awk -F '|' '{print $3}')
         fi
       done
-      DISTRIBUTED_BY="DISTRIBUTED BY (${distribution})"
+      
+      if [ "${distribution^^}" == "REPLICATED" ]; then
+        DISTRIBUTED_BY="DISTRIBUTED REPLICATED"
+      else
+        DISTRIBUTED_BY="DISTRIBUTED BY (${distribution})"
+      fi
     fi
 
     log_time "psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f ${i} -v SMALL_STORAGE=\"${SMALL_STORAGE}\" -v MEDIUM_STORAGE=\"${MEDIUM_STORAGE}\" -v LARGE_STORAGE=\"${LARGE_STORAGE}\" -v DISTRIBUTED_BY=\"${DISTRIBUTED_BY}\""

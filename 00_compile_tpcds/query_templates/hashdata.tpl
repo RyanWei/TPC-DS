@@ -1,4 +1,4 @@
- -- $Id: pivotal.tpl,v 2.1 2016/01/19 09:51:52 jgr Exp $
+ -- $Id: hashdata.tpl,v 1.0 2022/11/23 09:51:52 jgr Exp $
 define __LIMITA = "";
 define __LIMITB = "";
 define __LIMITC = "limit %d";
