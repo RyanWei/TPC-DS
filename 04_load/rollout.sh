@@ -71,8 +71,6 @@ for i in ${PWD}/*.${filter}.*.sql; do
 done
 
 log_time "finished loading tables"
-tuples=0
-print_log ${tuples}
 
 stop_gpfdist
 
