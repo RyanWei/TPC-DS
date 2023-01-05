@@ -46,6 +46,8 @@ if [ "${RUN_ANALYZE}" == "true" ]; then
 
   tuples="-1"
   print_log ${tuples}
+else
+  echo "AnalyzeDB Skipped..."
 fi
 
 rm -f ${TPC_DS_DIR}/log/*single.explain_analyze.log
