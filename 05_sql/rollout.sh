@@ -44,7 +44,7 @@ if [ "${RUN_ANALYZE}" == "true" ]; then
     psql -v ON_ERROR_STOP=1 -q -t -A -c "${SQL_QUERY}"
   done
 
-  tuples="0"
+  tuples="-1"
   print_log ${tuples}
 fi
 
