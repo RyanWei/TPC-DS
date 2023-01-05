@@ -45,6 +45,7 @@ export RUN_LOAD="true"
 
 # step 05_sql
 export RUN_SQL="true"
+export RUN_ANALYZE="true"
 
 # step 06_single_user_reports
 export RUN_SINGLE_USER_REPORTS="true"
