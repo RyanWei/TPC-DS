@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PWD=$(get_pwd ${BASH_SOURCE[0]})
+PWD=`PWD`
 echo ${PWD}
 
 if [ $# -eq 0 ]; then
