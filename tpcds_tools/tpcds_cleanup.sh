@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PWD=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+PWD=$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)
 echo ${PWD}
 
 if [ $# -eq 0 ]; then
