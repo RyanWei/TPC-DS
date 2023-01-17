@@ -6,11 +6,9 @@ export SCHEMA_NAME="tpcds"
 export GREENPLUM_PATH=$GPHOME/greenplum_path.sh
 export CHIP_TYPE="arm"
  
-
-# to connect directly to GP
+# Default port used is configed via env setting of $PGPORT for user $ADMIN_USER
+# Confige the port to connect for miltiuser test if you want to use connection pools.
 export PSQL_OPTIONS="-p 5432"
-# to connect through pgbouncer
-#export PSQL_OPTIONS="-p 6543 -U dsbench"
 
 # benchmark options
 export GEN_DATA_SCALE="1"
