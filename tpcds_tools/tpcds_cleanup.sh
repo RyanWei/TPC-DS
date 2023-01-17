@@ -1,7 +1,8 @@
 #!/bin/bash
 
-PWD=`pwd`
-echo ${PWD}
+	
+DIR="$( cd"$( dirname"${BASH_SOURCE[0]}" )" && pwd )"
+echo ${DIR}
 
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <no_of_segments>"
