@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PWD=`PWD`
+PWD=`pwd`
 echo ${PWD}
 
 if [ $# -eq 0 ]; then
