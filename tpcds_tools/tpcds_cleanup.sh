@@ -1,9 +1,13 @@
 #!/bin/bash
 
+PWD=$(get_pwd ${BASH_SOURCE[0]})
+echo ${PWD}
+
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <no_of_segments>"
   exit 1
 fi
+
 echo "Cleaning generated sql files: 05_sql/*.sql"
 rm -f ${HOME}/TPC-DS/05_sql/*.sql
 echo "Cleaning binaries: 00_compile_tpcds/tools"
