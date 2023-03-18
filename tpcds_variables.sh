@@ -29,6 +29,7 @@ export GEN_NEW_DATA="true"
 
 # step 02_init
 export RUN_INIT="true"
+# set this to true if binary location changed
 export RESET_ENV_ON_SEGMENT='false'
 
 # step 03_ddl
