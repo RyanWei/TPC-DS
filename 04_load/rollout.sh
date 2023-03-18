@@ -35,12 +35,15 @@ function start_gpfdist() {
   else
     SQL_QUERY="select rank() over(partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = '${GPFDIST_LOCATION}' order by g.hostname"
   fi
+
+  flag=10
   for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "${SQL_QUERY}"); do
     CHILD=$(echo ${i} | awk -F '|' '{print $1}')
     EXT_HOST=$(echo ${i} | awk -F '|' '{print $2}')
     GEN_DATA_PATH=$(echo ${i} | awk -F '|' '{print $3}')
     GEN_DATA_PATH="${GEN_DATA_PATH}/dsbenchmark"
-    PORT=$((GPFDIST_PORT + CHILD))
+    PORT=$((GPFDIST_PORT + flag))
+    let flag=$flag+1
     echo "executing on ${EXT_HOST} ./start_gpfdist.sh $PORT ${GEN_DATA_PATH}"
     ssh -n -f ${EXT_HOST} "bash -c 'cd ~${ADMIN_USER}; ./start_gpfdist.sh $PORT ${GEN_DATA_PATH}'" &
   done
