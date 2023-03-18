@@ -5,6 +5,7 @@ PWD=$(get_pwd ${BASH_SOURCE[0]})
 
 step="sql"
 init_log ${step}
+get_version
 
 if [ "${RUN_ANALYZE}" == "true" ]; then
 
@@ -33,7 +34,7 @@ if [ "${RUN_ANALYZE}" == "true" ]; then
   else
     SQL_QUERY="select n.nspname, c.relname from pg_class c join pg_namespace n on c.relnamespace = n.oid left outer join (select starelid from pg_statistic group by starelid) s on c.oid = s.starelid join pg_partitioned_table p on p.partrelid = c.oid where n.nspname = '${SCHEMA_NAME}' and s.starelid is null order by 1, 2"
   fi
-  
+
   for t in $(psql -v ON_ERROR_STOP=1 -q -t -A -c "${SQL_QUERY}"); do
     schema_name=$(echo ${t} | awk -F '|' '{print $1}')
     table_name=$(echo ${t} | awk -F '|' '{print $2}')
