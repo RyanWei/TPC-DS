@@ -29,6 +29,7 @@ export GEN_NEW_DATA="true"
 
 # step 02_init
 export RUN_INIT="true"
+export RESET_ENV_ON_SEGMENT='false'
 
 # step 03_ddl
 # To run another TPC-DS with a different BENCH_ROLE using existing tables and data
