@@ -5,7 +5,6 @@ PWD=$(get_pwd ${BASH_SOURCE[0]})
 
 step="init"
 init_log ${step}
-get_version
 start_log
 schema_name="tpcds"
 export schema_name
