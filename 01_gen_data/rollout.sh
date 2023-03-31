@@ -77,7 +77,7 @@ if [ "${GEN_NEW_DATA}" == "true" ]; then
   kill_orphaned_data_gen
   copy_generate_data
   gen_data
-
+  echo "Current database running this test is $VERSION"
   echo ""
   get_count_generate_data
   echo "Now generating data.  This may take a while."

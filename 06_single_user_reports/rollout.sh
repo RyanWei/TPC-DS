@@ -29,22 +29,37 @@ psql -v ON_ERROR_STOP=1 -q -t -A -c "select 'analyze ' || n.nspname || '.' || c.
 echo "********************************************************************************"
 echo "Generate Data"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/gen_data_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/gen_data_report.sql
 echo ""
 echo "********************************************************************************"
 echo "Data Loads"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/loads_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/loads_report.sql
 echo ""
 echo "********************************************************************************"
 echo "Analyze"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/analyze_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/analyze_report.sql
 echo ""
 echo ""
 echo "********************************************************************************"
 echo "Queries"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/queries_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/queries_report.sql
 echo ""
+
+echo "********************************************************************************"
+echo "Summary"
+echo "********************************************************************************"
+echo ""
+LOAD_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from tpcds_reports.load where tuples > 0")
+ANALYZE_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from tpcds_reports.sql where tuples = -1")
+QUERIES_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from (SELECT split_part(description, '.', 2) AS id, min(duration) AS duration FROM tpcds_reports.sql where tuples >= 0 GROUP BY split_part(description, '.', 2)) as sub")
+
+printf "Load (seconds)\t\t\t%d\n" "${LOAD_TIME}"
+printf "Analyze (seconds)\t\t\t%d\n" "${ANALYZE_TIME}"
+printf "1 User Queries (seconds)\t\t%d\n" "${QUERIES_TIME}"
+echo ""
+echo "********************************************************************************"
+
 echo "Finished ${step}"

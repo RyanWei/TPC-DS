@@ -6,11 +6,9 @@ export SCHEMA_NAME="tpcds"
 export GREENPLUM_PATH=$GPHOME/greenplum_path.sh
 export CHIP_TYPE="arm"
  
-
-# to connect directly to GP
+# Default port used is configed via env setting of $PGPORT for user $ADMIN_USER
+# Confige the port to connect for miltiuser test if you want to use connection pools.
 export PSQL_OPTIONS="-p 5432"
-# to connect through pgbouncer
-#export PSQL_OPTIONS="-p 6543 -U dsbench"
 
 # benchmark options
 export GEN_DATA_SCALE="1"
@@ -31,6 +29,8 @@ export GEN_NEW_DATA="true"
 
 # step 02_init
 export RUN_INIT="true"
+# set this to true if binary location changed
+export RESET_ENV_ON_SEGMENT='false'
 
 # step 03_ddl
 # To run another TPC-DS with a different BENCH_ROLE using existing tables and data
@@ -45,6 +45,7 @@ export RUN_LOAD="true"
 
 # step 05_sql
 export RUN_SQL="true"
+export RUN_ANALYZE="true"
 
 # step 06_single_user_reports
 export RUN_SINGLE_USER_REPORTS="true"
