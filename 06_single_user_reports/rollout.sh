@@ -29,23 +29,23 @@ psql -v ON_ERROR_STOP=1 -q -t -A -c "select 'analyze ' || n.nspname || '.' || c.
 echo "********************************************************************************"
 echo "Generate Data"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/gen_data_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/gen_data_report.sql
 echo ""
 echo "********************************************************************************"
 echo "Data Loads"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/loads_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/loads_report.sql
 echo ""
 echo "********************************************************************************"
 echo "Analyze"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/analyze_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/analyze_report.sql
 echo ""
 echo ""
 echo "********************************************************************************"
 echo "Queries"
 echo "********************************************************************************"
-psql -F $'\t' -A -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/queries_report.sql
+psql -v ON_ERROR_STOP=1 -P pager=off -f ${PWD}/queries_report.sql
 echo ""
 
 echo "********************************************************************************"
