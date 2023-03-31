@@ -1,26 +1,26 @@
 #!/bin/bash
 set -e
 
-PWD=$(get_pwd ${BASH_SOURCE[0]})
+PWD=$(get_pwd "${BASH_SOURCE[0]}")
 
 step="single_user_reports"
 
-init_log ${step}
+init_log "${step}"
 
 filter="gpdb"
 
-for i in ${PWD}/*.${filter}.*.sql; do
+for i in "${PWD}"/*."${filter}".*.sql; do
   log_time "psql -v ON_ERROR_STOP=1 -a -f ${i}"
-  psql -v ON_ERROR_STOP=1 -a -f ${i}
+  psql -v ON_ERROR_STOP=1 -a -f "${i}"
   echo ""
 done
 
-for i in ${PWD}/*.copy.*.sql; do
-  logstep=$(echo ${i} | awk -F 'copy.' '{print $2}' | awk -F '.' '{print $1}')
+for i in "${PWD}"/*.copy.*.sql; do
+  logstep=$(echo "${i}" | awk -F 'copy.' '{print $2}' | awk -F '.' '{print $1}')
   logfile="${TPC_DS_DIR}/log/rollout_${logstep}.log"
   logfile="'${logfile}'"
   log_time "psql -v ON_ERROR_STOP=1 -a -f ${i} -v LOGFILE=\"${logfile}\""
-  psql -v ON_ERROR_STOP=1 -a -f ${i} -v LOGFILE="${logfile}"
+  psql -v ON_ERROR_STOP=1 -a -f "${i}" -v LOGFILE="${logfile}"
   echo ""
 done
 
