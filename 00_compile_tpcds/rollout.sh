@@ -11,8 +11,6 @@ export schema_name
 table_name="compile"
 export table_name
 
-compile_flag="true"
-
 function make_tpc() {
   #compile the tools
   cd "${PWD}"/tools

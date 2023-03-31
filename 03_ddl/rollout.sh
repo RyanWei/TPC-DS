@@ -58,7 +58,7 @@ for i in "${PWD}"/*.ext_tpcds.*.sql; do
    fi
     flag=10
     for x in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "${SQL_QUERY}"); do
-      CHILD=$(echo ${x} | awk -F '|' '{print $1}')
+      # CHILD=$(echo ${x} | awk -F '|' '{print $1}')
       EXT_HOST=$(echo ${x} | awk -F '|' '{print $2}')
       PORT=$((GPFDIST_PORT + flag))
       let flag=$flag+1
