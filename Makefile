@@ -12,7 +12,7 @@ dependencies:
 
 .PHONY: shfmt
 shfmt:
-	find . -name "*.sh" -not -path './00_compile_tpcds/t*' | xargs shfmt -d -i 2 -sr -w
+	find . -name "*.sh" -not -path './00_compile_tpcds/t*' | xargs shfmt -d -i 2 -sr
 
 .PHONY: lint
 lint:
@@ -27,7 +27,4 @@ super-linter:
 		-e LOG_LEVEL=ERROR \
 		-e FILTER_REGEX_EXCLUDE=$(EXCLUDED_DIRECTORY) \
 		-v ${PWD}:/tmp/lint \
-		github/super-linter:slim-$(SUPER_LINTER_VERSION)
-
-.PHONY: test
-test: shfmt lint super-linter
+		gcr.io/gp-virtual/super-linter:slim-$(SUPER_LINTER_VERSION)
