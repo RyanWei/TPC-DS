@@ -1,53 +1,48 @@
 #!/bin/bash
 set -e
 
-PWD=$(get_pwd "${BASH_SOURCE[0]}")
+PWD=$(get_pwd ${BASH_SOURCE[0]})
 
 step="init"
-init_log "${step}"
+init_log ${step}
 start_log
-schema_name=${SCHEMA_NAME}
+schema_name="tpcds"
 export schema_name
 table_name="init"
+export table_name
 
 function set_segment_bashrc() {
   #this is only needed if the segment nodes don't have the bashrc file created
   echo "if [ -f /etc/bashrc ]; then" > ${PWD}/segment_bashrc
   echo "  . /etc/bashrc" >> ${PWD}/segment_bashrc
   echo "fi" >> ${PWD}/segment_bashrc
-  echo "source ${GREENPLUM_PATH}" >> ${PWD}/segment_bashrc
+  echo "source /usr/local/greenplum-db/greenplum_path.sh" >> ${PWD}/segment_bashrc
   echo "export LD_PRELOAD=${LD_PRELOAD}" >> ${PWD}/segment_bashrc
   chmod 755 ${PWD}/segment_bashrc
 
   echo "set up .bashrc on segment hosts"
-  while IFS= read -r ext_host; do
+  for ext_host in $(cat ${TPC_DS_DIR}/segment_hosts.txt); do
     # don't overwrite the master.  Only needed on single node installs
-    shortname=$(echo "${ext_host}" | awk -F '.' '{print $1}')
+    shortname=$(echo ${ext_host} | awk -F '.' '{print $1}')
     if [ "${MASTER_HOST}" != "${shortname}" ]; then
-      bashrc_exists=$(ssh -n "${ext_host}" "find ~ -name .bashrc | grep -c .")
-      if [ "${bashrc_exists}" -eq 0 ]; then
+      bashrc_exists=$(ssh ${ext_host} "find ~ -name .bashrc | grep -c .")
+      if [ ${bashrc_exists} -eq 0 ]; then
         echo "copy new .bashrc to ${ext_host}:~${ADMIN_USER}"
-        scp "${PWD}"/segment_bashrc "${ext_host}":~"${ADMIN_USER}"/.bashrc
+        scp ${PWD}/segment_bashrc ${ext_host}:~${ADMIN_USER}/.bashrc
       else
-        if [ "${RESET_ENV_ON_SEGMENT}" == "true" ]; then
-          ssh ${ext_host} "sed -i '/greenplum_path.sh/d' ~/.bashrc"
-          ssh ${ext_host} "sed -i '/LD_PRELOAD/d' ~/.bashrc"
-        fi
         count=$(ssh ${ext_host} "grep -c greenplum_path ~/.bashrc || true")
         if [ ${count} -eq 0 ]; then
           echo "Adding greenplum_path to ${ext_host} .bashrc"
-          # shellcheck disable=SC2029
-          ssh "${ext_host}" "echo \"source ${GREENPLUM_PATH}\" >> ~/.bashrc"
+          ssh ${ext_host} "echo \"source ${GREENPLUM_PATH}\" >> ~/.bashrc"
         fi
-        count=$(ssh -n "${ext_host}" "grep -c LD_PRELOAD ~/.bashrc || true")
-        if [ "${count}" -eq 0 ]; then
+        count=$(ssh ${ext_host} "grep -c LD_PRELOAD ~/.bashrc || true")
+        if [ ${count} -eq 0 ]; then
           echo "Adding LD_PRELOAD to ${ext_host} .bashrc"
-          # shellcheck disable=SC2029
-          ssh "${ext_host}" "echo \"export LD_PRELOAD=${LD_PRELOAD}\" >> ~/.bashrc"
+          ssh ${ext_host} "echo \"export LD_PRELOAD=${LD_PRELOAD}\" >> ~/.bashrc"
         fi
       fi
     fi
-  done < "${TPC_DS_DIR}"/segment_hosts.txt
+  done
 }
 
 function check_gucs() {
@@ -55,8 +50,8 @@ function check_gucs() {
 
   if [ "${VERSION}" == "gpdb_5" ]; then
     counter=$(
-      psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer_join_arity_for_associativity_commutativity" | grep -ci "18" || true
-      exit "${PIPESTATUS[0]}"
+      psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer_join_arity_for_associativity_commutativity" | grep -i "18" | wc -l
+      exit ${PIPESTATUS[0]}
     )
     if [ "${counter}" -eq "0" ]; then
       echo "setting optimizer_join_arity_for_associativity_commutativity"
@@ -67,8 +62,8 @@ function check_gucs() {
 
   echo "check optimizer"
   counter=$(
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer" | grep -ci "on" || true
-    exit "${PIPESTATUS[0]}"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer" | grep -i "on" | wc -l
+    exit ${PIPESTATUS[0]}
   )
   if [ "${counter}" -eq "0" ]; then
     echo "enabling optimizer"
@@ -78,8 +73,8 @@ function check_gucs() {
 
   echo "check analyze_root_partition"
   counter=$(
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer_analyze_root_partition" | grep -ci "on" || true
-    exit "${PIPESTATUS[0]}"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer_analyze_root_partition" | grep -i "on" | wc -l
+    exit ${PIPESTATUS[0]}
   )
   if [ "${counter}" -eq "0" ]; then
     echo "enabling analyze_root_partition"
@@ -89,8 +84,8 @@ function check_gucs() {
 
   echo "check gp_autostats_mode"
   counter=$(
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "show gp_autostats_mode" | grep -ci "none" || true
-    exit "${PIPESTATUS[0]}"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "show gp_autostats_mode" | grep -i "none" | wc -l
+    exit ${PIPESTATUS[0]}
   )
   if [ "${counter}" -eq "0" ]; then
     echo "changing gp_autostats_mode to none"
@@ -100,8 +95,8 @@ function check_gucs() {
 
   echo "check default_statistics_target"
   counter=$(
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "show default_statistics_target" | grep -c "100" || true
-    exit "${PIPESTATUS[0]}"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "show default_statistics_target" | grep "100" | wc -l
+    exit ${PIPESTATUS[0]}
   )
   if [ "${counter}" -eq "0" ]; then
     echo "changing default_statistics_target to 100"
@@ -118,11 +113,11 @@ function check_gucs() {
 function copy_config() {
   echo "copy config files"
   if [ "${MASTER_DATA_DIRECTORY}" != "" ]; then
-    cp "${MASTER_DATA_DIRECTORY}"/pg_hba.conf "${TPC_DS_DIR}"/log/
-    cp "${MASTER_DATA_DIRECTORY}"/postgresql.conf "${TPC_DS_DIR}"/log/
+    cp ${MASTER_DATA_DIRECTORY}/pg_hba.conf ${TPC_DS_DIR}/log/
+    cp ${MASTER_DATA_DIRECTORY}/postgresql.conf ${TPC_DS_DIR}/log/
   fi
   #gp_segment_configuration
-  psql -v ON_ERROR_STOP=1 -q -A -t -c "SELECT * FROM gp_segment_configuration" -o "${TPC_DS_DIR}"/log/gp_segment_configuration.txt
+  psql -v ON_ERROR_STOP=1 -q -A -t -c "SELECT * FROM gp_segment_configuration" -o ${TPC_DS_DIR}/log/gp_segment_configuration.txt
 }
 
 get_version
@@ -130,6 +125,6 @@ set_segment_bashrc
 check_gucs
 copy_config
 
-print_log "1" "${schema_name}" "${table_name}" "0"
+print_log
 
 echo "Finished ${step}"
