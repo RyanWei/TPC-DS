@@ -4,6 +4,10 @@ set -e
 PWD=$(get_pwd ${BASH_SOURCE[0]})
 
 step="ddl"
+
+log_time "Step ${step} started"
+printf "\n"
+
 init_log ${step}
 get_version
 
@@ -60,10 +64,12 @@ if [ "${DROP_EXISTING_TABLES}" == "true" ]; then
     else
       SQL_QUERY="select rank() over(partition by g.hostname order by g.datadir), g.hostname from gp_segment_configuration g where g.content >= 0 and g.role = '${GPFDIST_LOCATION}' order by g.hostname"
    fi
+    flag=10
     for x in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "${SQL_QUERY}"); do
       CHILD=$(echo ${x} | awk -F '|' '{print $1}')
       EXT_HOST=$(echo ${x} | awk -F '|' '{print $2}')
-      PORT=$((GPFDIST_PORT + CHILD))
+      PORT=$((GPFDIST_PORT + flag))
+      let flag=$flag+1
 
       if [ "${counter}" -eq "0" ]; then
         LOCATION="'"
@@ -115,3 +121,5 @@ psql -v ON_ERROR_STOP=0 -q -P pager=off -c "${SetSearchPath}"
 print_log
 
 echo "Finished ${step}"
+log_time "Step ${step} finished"
+printf "\n"

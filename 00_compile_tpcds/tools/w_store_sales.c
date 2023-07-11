@@ -57,7 +57,8 @@ extern rng_t Streams[];
 struct W_STORE_SALES_TBL g_w_store_sales;
 ds_key_t skipDays(int nTable, ds_key_t *pRemainder);
 static int *pItemPermutation,
-   nItemCount;
+   nItemCount,
+	nItemIndex;
 static ds_key_t jDate,
    kNewDateIndex;
 

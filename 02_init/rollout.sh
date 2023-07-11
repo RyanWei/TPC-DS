@@ -4,9 +4,13 @@ set -e
 PWD=$(get_pwd ${BASH_SOURCE[0]})
 
 step="init"
+
+log_time "Step ${step} started"
+printf "\n"
+
 init_log ${step}
 start_log
-schema_name="tpcds"
+schema_name=${SCHEMA_NAME}
 export schema_name
 table_name="init"
 export table_name
@@ -16,7 +20,7 @@ function set_segment_bashrc() {
   echo "if [ -f /etc/bashrc ]; then" > ${PWD}/segment_bashrc
   echo "  . /etc/bashrc" >> ${PWD}/segment_bashrc
   echo "fi" >> ${PWD}/segment_bashrc
-  echo "source /usr/local/greenplum-db/greenplum_path.sh" >> ${PWD}/segment_bashrc
+  echo "source ${GREENPLUM_PATH}" >> ${PWD}/segment_bashrc
   echo "export LD_PRELOAD=${LD_PRELOAD}" >> ${PWD}/segment_bashrc
   chmod 755 ${PWD}/segment_bashrc
 
@@ -30,6 +34,10 @@ function set_segment_bashrc() {
         echo "copy new .bashrc to ${ext_host}:~${ADMIN_USER}"
         scp ${PWD}/segment_bashrc ${ext_host}:~${ADMIN_USER}/.bashrc
       else
+        if [ "${RESET_ENV_ON_SEGMENT}" == "true" ]; then
+          ssh ${ext_host} "sed -i '/greenplum_path.sh/d' ~/.bashrc"
+          ssh ${ext_host} "sed -i '/LD_PRELOAD/d' ~/.bashrc"
+        fi
         count=$(ssh ${ext_host} "grep -c greenplum_path ~/.bashrc || true")
         if [ ${count} -eq 0 ]; then
           echo "Adding greenplum_path to ${ext_host} .bashrc"
@@ -128,3 +136,6 @@ copy_config
 print_log
 
 echo "Finished ${step}"
+
+log_time "Step ${step} finished"
+printf "\n"

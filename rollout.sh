@@ -34,6 +34,7 @@ echo "RUN_INIT: ${RUN_INIT}"
 echo "RUN_DDL: ${RUN_DDL}"
 echo "DROP_EXISTING_TABLES: ${DROP_EXISTING_TABLES}"
 echo "RUN_LOAD: ${RUN_LOAD}"
+echo "RUN_ANALYZE: ${RUN_ANALYZE}"
 echo "RUN_SQL: ${RUN_SQL}"
 echo "SINGLE_USER_ITERATIONS: ${SINGLE_USER_ITERATIONS}"
 echo "RUN_SINGLE_USER_REPORTS: ${RUN_SINGLE_USER_REPORTS}"
@@ -46,7 +47,7 @@ echo ""
 
 # We assume that the flag variable names are consistent with the corresponding directory names.
 # For example, `00_compile_tpcds directory` name will be used to get `true` or `false` value from `RUN_COMPILE_TPCDS` in `tpcds_variables.sh`.
-for i in ${PWD}/0*/; do
+for i in ${PWD}/0*; do
   # split by the first underscore and extract the step name.
   step_name=${i#*_}
   step_name=${step_name%%/}

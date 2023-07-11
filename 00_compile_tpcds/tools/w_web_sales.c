@@ -59,6 +59,7 @@ ds_key_t skipDays(int nTable, ds_key_t *pRemainder);
 
 static ds_key_t kNewDateIndex = 0;
 static ds_key_t jDate;
+static int nItemIndex = 0;
 
 
 /*

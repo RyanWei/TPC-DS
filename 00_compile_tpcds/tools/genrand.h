@@ -79,6 +79,4 @@ int	genrand_url(char *pDest, int nColumn);
 int	setSeed(int nStream, int nValue);
 void resetSeeds(int nTable);
 
-extern int nItemIndex;
-
 #endif

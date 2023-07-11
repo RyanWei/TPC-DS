@@ -3,6 +3,10 @@
 set -e
 
 PWD=$(get_pwd ${BASH_SOURCE[0]})
+step="multi_user"
+
+log_time "Step ${step} started"
+printf "\n"
 
 if [ "${MULTI_USER_COUNT}" -eq "0" ]; then
   echo "MULTI_USER_COUNT set at 0 so exiting..."
@@ -94,3 +98,7 @@ if [ "${file_count}" -ne "${MULTI_USER_COUNT}" ]; then
 fi
 
 rm -f ${TPC_DS_DIR}/log/end_testing_*.log # remove the counter log file if successful.
+
+echo "Finished ${step}"
+log_time "Step ${step} finished"
+printf "\n"

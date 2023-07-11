@@ -488,6 +488,7 @@ print_start (int tbl)
    if (!res)                    /* open failed! */
      {
         INTERNAL ("Failed to open output file!");
+	exit(0);
      }
 #ifdef WIN32
    else if (setvbuf (fpOutfile, NULL, _IOFBF, 32767))

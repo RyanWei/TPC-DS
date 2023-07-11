@@ -4,13 +4,18 @@ set -e
 PWD=$(get_pwd ${BASH_SOURCE[0]})
 
 step="score"
+log_time "Step ${step} started"
+printf "\n"
+
 init_log ${step}
 
 LOAD_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from tpcds_reports.load where tuples > 0")
-ANALYZE_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from tpcds_reports.load where tuples = 0")
-QUERIES_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from (SELECT split_part(description, '.', 2) AS id, min(duration) AS duration FROM tpcds_reports.sql GROUP BY split_part(description, '.', 2)) as sub")
+ANALYZE_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from tpcds_reports.sql where id = 1")
+QUERIES_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from (SELECT split_part(description, '.', 2) AS id, min(duration) AS duration FROM tpcds_reports.sql where tuples >= 0 GROUP BY split_part(description, '.', 2)) as sub")
 CONCURRENT_QUERY_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select round(sum(extract('epoch' from duration))) from tpcds_testing.sql")
 THROUGHPUT_ELAPSED_TIME=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select max(end_epoch_seconds) - min(start_epoch_seconds) from tpcds_testing.sql")
+SUCCESS_QUERY=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select count(*) from tpcds_reports.sql where tuples >= 0")
+FAILD_QUERY=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "select count(*) from tpcds_reports.sql where tuples < 0 and id > 1")
 
 S_Q=${MULTI_USER_COUNT}
 SF=${GEN_DATA_SCALE}
@@ -35,7 +40,7 @@ printf "Number of Streams (Sq)\t%d\n" "${S_Q}"
 printf "Scale Factor (SF)\t%d\n" "${SF}"
 printf "Load (seconds)\t\t\t%d\n" "${LOAD_TIME}"
 printf "Analyze (seconds)\t\t\t%d\n" "${ANALYZE_TIME}"
-printf "1 User Queries (seconds)\t\t%d\n" "${QUERIES_TIME}"
+printf "1 User Queries (seconds)\t\t%d\tFor %d success queries and %d failed queries\n" "${QUERIES_TIME}" "${SUCCESS_QUERY}" "${FAILD_QUERY}"
 printf "Sum of Elapse Time for all Concurrent Queries (seconds)\t%d\n" "${CONCURRENT_QUERY_TIME}"
 printf "Throughput Test Elapsed Time (seconds)\t%d\n" "${THROUGHPUT_ELAPSED_TIME}"
 printf "\n"
@@ -54,3 +59,5 @@ printf "TLD (hours)\t\t%.3f\n" "${TLD_2_2_0}"
 printf "Score\t\t\t%d\n" "${SCORE_2_2_0}"
 
 echo "Finished ${step}"
+log_time "Step ${step} finished"
+printf "\n"
