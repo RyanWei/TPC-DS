@@ -48,7 +48,7 @@ option_t options[] =
 {"FORCE",		OPT_FLG|OPT_ADV,	4,"over-write data files without prompting", NULL, "N"}, 
 {"HELP",		OPT_INT,			5, "display this message", usage, "0"},
 {"PARAMS",		OPT_STR,			6, "read parameters from file <s>", read_file, ""}, 
-{"PROG",		OPT_STR|OPT_HIDE|OPT_SET,	7, "DO NOT MODIFY" , NULL, "DBGEN2"}, 
+{"PROG",		OPT_STR|OPT_HIDE|OPT_SET,	7, "DO NOT MODIFY" , NULL, "dsdgen"}, 
 {"QUIET",		OPT_FLG,			8, "disable all output to stdout/stderr", NULL, "N"}, 
 {"SCALE",		OPT_INT,			9,"volume of data to generate in GB", SetScaleIndex, "1"}, 
 {"SUFFIX",		OPT_STR|OPT_ADV,	10,"use <s> as output file suffix", NULL, ".dat"}, 

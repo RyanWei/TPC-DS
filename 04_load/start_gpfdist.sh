@@ -11,7 +11,7 @@ if [ -z "$GPHOME" ]; then
     source $gphome/greenplum_path.sh
 fi
 
-gpfdist -p ${GPFDIST_PORT} -d ${GEN_DATA_PATH} &> gpfdist.${GPFDIST_PORT}.log &
+gpfdist -p ${GPFDIST_PORT} -d ${GEN_DATA_PATH} > ${GEN_DATA_PATH}/gpfdist.${GPFDIST_PORT}.log 2>&1 &
 pid=$!
 
 if [ "${pid}" -ne "0" ]; then

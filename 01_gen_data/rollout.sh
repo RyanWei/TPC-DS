@@ -56,16 +56,19 @@ function gen_data() {
   for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "${SQL_QUERY}"); do
     CHILD=$(echo ${i} | awk -F '|' '{print $1}')
     EXT_HOST=$(echo ${i} | awk -F '|' '{print $2}')
-    GEN_DATA_PATH=$(echo ${i} | awk -F '|' '{print $3}')
+    GEN_DATA_PATH=$(echo ${i} | awk -F '|' '{print $3}' | sed 's#//#/#g')
     GEN_DATA_PATH="${GEN_DATA_PATH}/dsbenchmark"
-    echo "ssh -n -f ${EXT_HOST} \"bash -c \'cd ~/; ./generate_data.sh ${GEN_DATA_SCALE} ${CHILD} ${PARALLEL} ${GEN_DATA_PATH} &> generate_data.${CHILD}.log &\'\""
-
-    ssh -n -f ${EXT_HOST} "bash -c 'cd ~/; ./generate_data.sh ${GEN_DATA_SCALE} ${CHILD} ${PARALLEL} ${GEN_DATA_PATH} &> generate_data.${CHILD}.log &'" &
+    echo "ssh -n -f ${EXT_HOST} \"bash -c 'cd ~/; ./generate_data.sh ${GEN_DATA_SCALE} ${CHILD} ${PARALLEL} ${GEN_DATA_PATH} > /tmp/tpcds.generate_data.${CHILD}.log 2>&1 &'\""
+    ssh -n -f ${EXT_HOST} "bash -c 'cd ~/; ./generate_data.sh ${GEN_DATA_SCALE} ${CHILD} ${PARALLEL} ${GEN_DATA_PATH} > /tmp/tpcds.generate_data.${CHILD}.log 2>&1 &'" &
   done
   wait
 }
 
 step="gen_data"
+
+log_time "Step ${step} started"
+printf "\n"
+
 init_log ${step}
 start_log
 schema_name="tpcds"
@@ -77,7 +80,7 @@ if [ "${GEN_NEW_DATA}" == "true" ]; then
   kill_orphaned_data_gen
   copy_generate_data
   gen_data
-
+  echo "Current database running this test is $VERSION"
   echo ""
   get_count_generate_data
   echo "Now generating data.  This may take a while."
@@ -104,3 +107,5 @@ ${PWD}/generate_queries.sh
 print_log
 
 echo "Finished ${step}"
+log_time "Step ${step} finished"
+printf "\n"
