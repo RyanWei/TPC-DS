@@ -15,6 +15,7 @@ TPC has published the following TPC-DS standards over time:
 | 2.1.0 | 2015/11/12 | http://www.tpc.org/tpc_documents_current_versions/pdf/tpc-ds_v2.1.0.pdf |
 | 1.3.1 (earliest) | 2015/02/19 | http://www.tpc.org/tpc_documents_current_versions/pdf/tpc-ds_v1.3.1.pdf |
 
+As of version 1.2 of this tool TPC-DS 3.2.0 is used.
 
 ## Setup
 ### Prerequisites
@@ -45,12 +46,12 @@ Visit the repo at https://github.com/RyanWei/TPC-DS-HashData/releases/and downlo
 ssh gpadmin@mdw
 curl -LO https://github.com/RyanWei/TPC-DS-HashData/archive/refs/tags/v1.1.tar.gz
 tar xzf v1.1.tar.gz
-mv TPC-DS-HashData-1.1 TPC-DS
+mv TPC-DS-HashData-1.1 TPC-DS-HashData
 ```
 Put the folder under /home/gpadmin/ and change owner to gpadmin.
 
 ```
-chown -R gpadmin.gpadmin TPC-DS
+chown -R gpadmin.gpadmin TPC-DS-HashData
 ```
 
 ## Usage
@@ -59,46 +60,98 @@ To run the benchmark, login as `gpadmin` on `mdw:
 
 ```
 ssh gpadmin@mdw
-cd ~/TPC-DS
-./tpcds.sh
+cd ~/TPC-DS-HashData
+./run.sh
 ```
 
-By default, it will run a scale 1 (1G) and with 1 concurrent users, from data generation to score computation.
+By default, it will run a scale 1 (1G) and with 1 concurrent users from data generation to score computation in the background.
+Log will be stored with name `tpcds_<time_stamp>.log` in ~/TPC-DS-HashData.
 
 ### Configuration Options
 
-By changing the `tpcds_variables.sh`, we can control how this benchmark will run.
+By changing the `tpcds_variables.sh`, we can control how to run this benchmark.
 
 This is the default example at [tpcds_variables.sh](https://github.com/RyanWei/TPC-DS-HashData/blob/main/tpcds_variables.sh)
 
 ```shell
 # environment options
-ADMIN_USER="gpadmin"
-BENCH_ROLE="dsbench"
-SCHEMA_NAME="tpcds"
-GREENPLUM_PATH=$GPHOME/greenplum_path.sh
-CHIP_TYPE="x86"
+export ADMIN_USER="gpadmin"
+export BENCH_ROLE="dsbench"
+export SCHEMA_NAME="tpcds"
+export GREENPLUM_PATH=$GPHOME/greenplum_path.sh
+# set chip type to arm or x86 to avoid compiling TPC-DS tools from source code.
+export CHIP_TYPE="arm"  
+ 
+# default port used is configed via env setting of $PGPORT for user $ADMIN_USER
+# confige the port to connect for miltiuser test if you want to use connection pools.
+export PSQL_OPTIONS="-p 5432"
 
 # benchmark options
-GEN_DATA_SCALE="1"
-MULTI_USER_COUNT="1"
+export GEN_DATA_SCALE="1"
+export MULTI_USER_COUNT="2"
 
 # step options
-RUN_COMPILE_TPCDS="true"
-RUN_GEN_DATA="true"
-RUN_INIT="true"
-RUN_DDL="true"
-RUN_LOAD="true"
-RUN_SQL="true"
-RUN_SINGLE_USER_REPORTS="true"
-RUN_MULTI_USER="true"
-RUN_MULTI_USER_REPORTS="true"
-RUN_SCORE="true"
+# step 00_compile_tpcds
+export RUN_COMPILE_TPCDS="true"
+
+# step 01_gen_data
+# To run another TPC-DS with a different BENCH_ROLE using existing tables and data
+# the queries need to be regenerated with the new role
+# change BENCH_ROLE and set RUN_GEN_DATA to true and GEN_NEW_DATA to false
+# GEN_NEW_DATA only takes affect when RUN_GEN_DATA is true, and the default setting
+# should true under normal circumstances
+export RUN_GEN_DATA="true"
+export GEN_NEW_DATA="true"
+
+# step 02_init
+export RUN_INIT="true"
+# set this to true if binary location changed
+export RESET_ENV_ON_SEGMENT='false'
+
+# step 03_ddl
+# To run another TPC-DS with a different BENCH_ROLE using existing tables and data
+# change BENCH_ROLE and set RUN_DDL to true and DROP_EXISTING_TABLES to false
+# DROP_EXISTING_TABLES only takes affect when RUN_DDL is true, and the default setting
+# should true under normal circumstances
+export RUN_DDL="true"
+export DROP_EXISTING_TABLES="true"
+
+# step 04_load
+export RUN_LOAD="true"
+
+# step 05_sql
+export RUN_SQL="true"
+export RUN_ANALYZE="true"
+# set wait time between each query execution
+export QUERY_INTERVAL="1"
+# set to 1 if you want to stop when error occurs
+export ON_ERROR_STOP="0"
+
+# step 06_single_user_reports
+export RUN_SINGLE_USER_REPORTS="true"
+
+# step 07_multi_user
+export RUN_MULTI_USER="false"
+export RUN_QGEN="true"
+
+# step 08_multi_user_reports
+export RUN_MULTI_USER_REPORTS="false"
+
+# step 09_score
+export RUN_SCORE="false"
 
 # misc options
-SINGLE_USER_ITERATIONS="1"
-EXPLAIN_ANALYZE="false"
-RANDOM_DISTRIBUTION="false"
+export SINGLE_USER_ITERATIONS="1"
+export EXPLAIN_ANALYZE="false"
+export RANDOM_DISTRIBUTION="false"
+export STATEMENT_MEM="2GB"
+export STATEMENT_MEM_MULTI_USER="1GB"
+
+# Set gpfdist location where gpfdist will run p (primary) or m (mirror)
+export GPFDIST_LOCATION="p"
+export OSVERSION=$(uname)
+export MASTER_HOST=$(hostname -s)
+export LD_PRELOAD=/lib64/libz.so.1 ps
 ```
 
 `tpcds.sh` will validate existence of those variables.
